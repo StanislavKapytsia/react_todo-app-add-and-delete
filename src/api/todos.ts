@@ -1,4 +1,3 @@
-import { PostContent } from '../types/postContent';
 import { TodoInterface } from '../types/Todo';
 import { client } from '../utils/fetchClient';
 
