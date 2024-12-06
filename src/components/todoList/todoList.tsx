@@ -1,11 +1,14 @@
 /* eslint-disable jsx-a11y/control-has-associated-label */
 /* eslint-disable jsx-a11y/label-has-associated-control */
 import { TodoInterface } from '../../types/Todo';
-import { Todo } from '../todo/todo';
+import { Todo } from '../todo/Todo';
 
 interface Props {
   filteredTodos: TodoInterface[];
-  deleteTodos: (content: number[] | number) => Promise<void>;
+  deleteTodos: (
+    content: number[] | number,
+    addData: HTMLDivElement,
+  ) => Promise<void>;
   applyDeleteTodos: boolean;
   tempTodo: TodoInterface | null;
 }

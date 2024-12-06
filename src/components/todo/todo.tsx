@@ -19,22 +19,21 @@ export const Todo: React.FC<Props> = ({
   deleteTodos,
   applyDeleteTodos,
 }) => {
-  // for edition selected input
   const [value, setValue] = useState(todo.title);
   const [canEdit, setCanEdit] = useState(false);
 
-  // for add/delete class is-active when delete one selected todos
   const todoLoaderRef = useRef<HTMLDivElement>(null);
 
-  // focus.on
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const { title, completed, id } = todo;
 
   useEffect(() => {
     if (inputRef.current) {
       inputRef.current.focus();
     }
   });
-  // edit todos
+
   const handleDoubleClick = () => {
     setCanEdit(true);
   };
@@ -49,23 +48,21 @@ export const Todo: React.FC<Props> = ({
     if (todoLoaderRef.current) {
       todoLoaderRef.current.classList.add('is-active');
 
-      deleteTodos(todo.id, todoLoaderRef.current);
+      deleteTodos(id, todoLoaderRef.current);
     }
   };
-
-  // add is-active in two ways with condition and with ref, because ...
 
   return (
     <div
       data-cy="Todo"
-      className={cn('todo', 'item-enter-done', { completed: todo.completed })}
+      className={cn('todo', 'item-enter-done', { completed: completed })}
     >
       <label className="todo__status-label">
         <input
           data-cy="TodoStatus"
           type="checkbox"
           className="todo__status"
-          checked={todo.completed}
+          checked={completed}
         />
       </label>
 
@@ -90,7 +87,7 @@ export const Todo: React.FC<Props> = ({
             />
           </form>
         ) : (
-          todo.title
+          title
         )}
       </span>
 
@@ -108,7 +105,7 @@ export const Todo: React.FC<Props> = ({
       <div
         data-cy="TodoLoader"
         className={cn('modal overlay', {
-          'is-active': applyDeleteTodos && todo.completed,
+          'is-active': applyDeleteTodos && completed,
         })}
         ref={todoLoaderRef}
       >

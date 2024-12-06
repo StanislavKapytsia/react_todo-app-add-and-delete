@@ -1,29 +1,20 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { addTodo, delTodo, get } from './api/todos';
-import { TodoList } from './components/todoList/todoList';
 import { TodoInterface } from './types/Todo';
-import { FilteredTodoList } from './components/footer/filteredTodoList';
+import { TodoList } from './components/todoList/TodoList';
+import { FilteredTodoList } from './components/footer/FilteredTodoList';
+import { Filter } from './types/filter';
 
 export const App: React.FC = () => {
-  //#region: variables **********
   const [todos, setTodos] = useState<TodoInterface[]>([]);
-  const [filter, setFilter] = useState('all');
+  const [filter, setFilter] = useState<Filter>(Filter.All);
   const [value, setValue] = useState('');
   const [tempTodo, setTempTodo] = useState<TodoInterface | null>(null);
-
-  // To add class 'is-active' for all todo.completed before delete
   const [applyDeleteTodos, setApplyDeleteTodos] = useState(false);
-
   const [errorMessage, setErrorMessage] = useState('');
 
   const inputForFocusRef = useRef<HTMLInputElement>(null);
-
-  // To add class 'hidden' for "ErrorNotification"
   const notificationRef = useRef<HTMLDivElement>(null);
-
-  //#endregion: variables **********
-
-  //#region: additional functions **********
 
   const hideNotification = () => {
     if (notificationRef.current) {
@@ -31,7 +22,7 @@ export const App: React.FC = () => {
     }
   };
 
-  function errorHandling(error: Error) {
+  const errorHandling = (error: Error) => {
     if (notificationRef.current) {
       notificationRef.current.classList.remove('hidden');
       setErrorMessage(error.message);
@@ -41,7 +32,7 @@ export const App: React.FC = () => {
         }
       }, 3000);
     }
-  }
+  };
 
   const newId = () => {
     const maxId = Math.max(0, ...todos.map(todo => todo.id));
@@ -61,10 +52,6 @@ export const App: React.FC = () => {
     title: title.trim(),
     completed: false,
   });
-
-  //#endregion: additional  functions **********
-
-  //#region: Loading Delete, Add **********
 
   useEffect(() => {
     if (inputForFocusRef.current) {
@@ -96,18 +83,15 @@ export const App: React.FC = () => {
 
   const deleteTodos = async (
     content: number[] | number,
-    addData: HTMLDivElement,
+    addData?: HTMLDivElement,
   ) => {
-    // deleteTodos have been used twice for single and group delete
     try {
       hideNotification();
-      // deleteTodos for group delete
       if (Array.isArray(content)) {
         setApplyDeleteTodos(true);
 
         const deletePromises = content.map(deleteId => delTodo(deleteId));
         const results = await Promise.allSettled(deletePromises);
-        // found this setting in web(
         const successfullyDeletedIds = results
           .filter(result => result.status === 'fulfilled')
           .map((_, index) => content[index]);
@@ -122,7 +106,6 @@ export const App: React.FC = () => {
           throw new Error('Unable to delete a todo');
         }
       } else {
-        // deleteTodos for single delete
         await delTodo(content);
 
         setTodos(current => current.filter(item => item.id !== content));
@@ -132,7 +115,7 @@ export const App: React.FC = () => {
     } finally {
       setApplyDeleteTodos(false);
       setTimeout(() => {
-        addData.classList.remove('is-active');
+        addData?.classList.remove('is-active');
       }, 500);
     }
   };
@@ -162,10 +145,6 @@ export const App: React.FC = () => {
     }
   };
 
-  //#endregion: Loading Delete, Add **********
-
-  //#region: more additional  functions **********
-
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -188,11 +167,11 @@ export const App: React.FC = () => {
   const filteredTodos = (): TodoInterface[] => {
     return todos.filter(todo => {
       switch (filter) {
-        case 'all':
+        case Filter.All:
           return true;
-        case 'active':
+        case Filter.Active:
           return !todo.completed;
-        case 'completed':
+        case Filter.Completed:
           return todo.completed;
         default:
           return true;
@@ -208,22 +187,18 @@ export const App: React.FC = () => {
     setValue(e.target.value);
   };
 
-  //#endregion: more additional  functions **********
-
   return (
     <div className="todoapp">
       <h1 className="todoapp__title">todos</h1>
 
       <div className="todoapp__content">
         <header className="todoapp__header">
-          {/* this button should have `active` class only if all todos are completed */}
           <button
             type="button"
             className="todoapp__toggle-all active"
             data-cy="ToggleAllButton"
           />
 
-          {/* Add a todo on form submit */}
           <form onSubmit={onSubmit}>
             <input
               ref={inputForFocusRef}
@@ -256,9 +231,6 @@ export const App: React.FC = () => {
           />
         )}
       </div>
-
-      {/* DON'T use conditional rendering to hide the notification */}
-      {/* Add the 'hidden' class to hide the message smoothly */}
 
       <div
         ref={notificationRef}
