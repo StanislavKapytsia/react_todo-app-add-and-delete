@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { TodoInterface } from '../../types/Todo';
 import cn from 'classnames';
 import { Filter } from '../../types/filter';
@@ -7,10 +7,9 @@ interface Props {
   todos: TodoInterface[];
   setFilter: React.Dispatch<React.SetStateAction<Filter>>;
   filter: string;
-  deleteTodos: (
-    content: number[] | number,
-    addData?: HTMLDivElement,
-  ) => Promise<void>;
+  deleteTodos: (content: number[]) => Promise<void>;
+  setTodosForDelete: React.Dispatch<React.SetStateAction<number[]>>;
+  todosForDelete: number[];
 }
 
 export const FilteredTodoList: React.FC<Props> = ({
@@ -18,6 +17,8 @@ export const FilteredTodoList: React.FC<Props> = ({
   setFilter,
   filter,
   deleteTodos,
+  setTodosForDelete,
+  todosForDelete,
 }) => {
   const countNotCompletedItem = useCallback(() => {
     const filtered = todos.filter(todo => !todo.completed);
@@ -28,12 +29,16 @@ export const FilteredTodoList: React.FC<Props> = ({
   const notCompletedItem = countNotCompletedItem();
 
   const handledeleteTodos = () => {
-    const completedTodosId = todos
-      .filter(todo => todo.completed)
-      .map(todo => todo.id);
-
-    deleteTodos(completedTodosId);
+    setTodosForDelete(() => {
+      return todos.filter(todo => todo.completed).map(todo => todo.id);
+    });
   };
+
+  useEffect(() => {
+    if (todosForDelete.length > 0) {
+      deleteTodos(todosForDelete);
+    }
+  }, [todosForDelete, deleteTodos]);
 
   return (
     <footer className="todoapp__footer" data-cy="Footer">

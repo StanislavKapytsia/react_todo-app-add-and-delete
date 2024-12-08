@@ -5,19 +5,23 @@ import { Todo } from '../todo/Todo';
 
 interface Props {
   filteredTodos: TodoInterface[];
-  deleteTodos: (
-    content: number[] | number,
-    addData: HTMLDivElement,
-  ) => Promise<void>;
-  applyDeleteTodos: boolean;
+
+  deleteTodos: (content: number[]) => Promise<void>;
+
   tempTodo: TodoInterface | null;
+
+  todosForDelete: number[];
+  setTodosForDelete: React.Dispatch<React.SetStateAction<number[]>>;
 }
 
 export const TodoList: React.FC<Props> = ({
   filteredTodos,
   deleteTodos,
-  applyDeleteTodos,
+
   tempTodo,
+  todosForDelete,
+
+  setTodosForDelete,
 }) => {
   return (
     <section className="todoapp__main" data-cy="TodoList">
@@ -26,7 +30,8 @@ export const TodoList: React.FC<Props> = ({
           todo={todo}
           key={todo.id}
           deleteTodos={deleteTodos}
-          applyDeleteTodos={applyDeleteTodos}
+          setTodosForDelete={setTodosForDelete}
+          todosForDelete={todosForDelete}
         />
       ))}
 

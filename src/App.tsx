@@ -2,16 +2,17 @@ import React, { useEffect, useRef, useState } from 'react';
 import { addTodo, delTodo, get } from './api/todos';
 import { TodoInterface } from './types/Todo';
 import { Filter } from './types/filter';
-import { TodoList } from './components/todoList/todoList';
-import { FilteredTodoList } from './components/footer/filteredTodoList';
+import { TodoList } from './components/todoList/TodoList';
+import { FilteredTodoList } from './components/footer/FilteredTodoList';
 
 export const App: React.FC = () => {
   const [todos, setTodos] = useState<TodoInterface[]>([]);
   const [filter, setFilter] = useState<Filter>(Filter.All);
   const [value, setValue] = useState('');
   const [tempTodo, setTempTodo] = useState<TodoInterface | null>(null);
-  const [applyDeleteTodos, setApplyDeleteTodos] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+
+  const [todosForDelete, setTodosForDelete] = useState<number[]>([]);
 
   const inputForFocusRef = useRef<HTMLInputElement>(null);
   const notificationRef = useRef<HTMLDivElement>(null);
@@ -81,43 +82,20 @@ export const App: React.FC = () => {
     }
   });
 
-  const deleteTodos = async (
-    content: number[] | number,
-    addData?: HTMLDivElement,
-  ) => {
-    try {
-      hideNotification();
-      if (Array.isArray(content)) {
-        setApplyDeleteTodos(true);
+  const deleteTodos = async (content: number[]) => {
+    for (const todoId of content) {
+      try {
+        hideNotification();
 
-        const deletePromises = content.map(deleteId => delTodo(deleteId));
-        const results = await Promise.allSettled(deletePromises);
-        const successfullyDeletedIds = results
-          .filter(result => result.status === 'fulfilled')
-          .map((_, index) => content[index]);
+        await delTodo(todoId);
 
-        setTodos(current =>
-          current.filter(item => !successfullyDeletedIds.includes(item.id)),
-        );
-
-        const hasErrors = results.some(result => result.status === 'rejected');
-
-        if (hasErrors) {
-          throw new Error('Unable to delete a todo');
-        }
-      } else {
-        await delTodo(content);
-
-        setTodos(current => current.filter(item => item.id !== content));
+        setTodos(current => current.filter(item => todoId !== item.id));
+      } catch (error) {
+        errorManagement(error);
       }
-    } catch (error) {
-      errorManagement(error);
-    } finally {
-      setApplyDeleteTodos(false);
-      setTimeout(() => {
-        addData?.classList.remove('is-active');
-      }, 500);
     }
+
+    setTodosForDelete([]);
   };
 
   const addTodos = async (data: string) => {
@@ -217,8 +195,9 @@ export const App: React.FC = () => {
           <TodoList
             filteredTodos={filteredTodos()}
             deleteTodos={deleteTodos}
-            applyDeleteTodos={applyDeleteTodos}
             tempTodo={tempTodo}
+            setTodosForDelete={setTodosForDelete}
+            todosForDelete={todosForDelete}
           />
         )}
 
@@ -228,6 +207,8 @@ export const App: React.FC = () => {
             setFilter={setFilter}
             filter={filter}
             deleteTodos={deleteTodos}
+            setTodosForDelete={setTodosForDelete}
+            todosForDelete={todosForDelete}
           />
         )}
       </div>

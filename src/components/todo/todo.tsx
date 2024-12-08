@@ -7,22 +7,20 @@ import { useEffect, useRef, useState } from 'react';
 
 interface Props {
   todo: TodoInterface;
-  deleteTodos: (
-    content: number[] | number,
-    addData: HTMLDivElement,
-  ) => Promise<void>;
-  applyDeleteTodos: boolean;
+  deleteTodos: (content: number[]) => Promise<void>;
+
+  setTodosForDelete: React.Dispatch<React.SetStateAction<number[]>>;
+  todosForDelete: number[];
 }
 
 export const Todo: React.FC<Props> = ({
   todo,
   deleteTodos,
-  applyDeleteTodos,
+  setTodosForDelete,
+  todosForDelete,
 }) => {
   const [value, setValue] = useState(todo.title);
   const [canEdit, setCanEdit] = useState(false);
-
-  const todoLoaderRef = useRef<HTMLDivElement>(null);
 
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -45,12 +43,14 @@ export const Todo: React.FC<Props> = ({
   };
 
   const handledeleteTodo = () => {
-    if (todoLoaderRef.current) {
-      todoLoaderRef.current.classList.add('is-active');
-
-      deleteTodos(id, todoLoaderRef.current);
-    }
+    setTodosForDelete(prev => [...prev, id]);
   };
+
+  useEffect(() => {
+    if (todosForDelete.length > 0) {
+      deleteTodos(todosForDelete);
+    }
+  }, [todosForDelete, deleteTodos]);
 
   return (
     <div
@@ -105,9 +105,8 @@ export const Todo: React.FC<Props> = ({
       <div
         data-cy="TodoLoader"
         className={cn('modal overlay', {
-          'is-active': applyDeleteTodos && completed,
+          'is-active': todosForDelete.includes(id),
         })}
-        ref={todoLoaderRef}
       >
         <div className="modal-background has-background-white-ter" />
         <div className="loader" />
