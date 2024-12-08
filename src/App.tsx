@@ -2,8 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { addTodo, delTodo, get } from './api/todos';
 import { TodoInterface } from './types/Todo';
 import { Filter } from './types/filter';
-import { TodoList } from './components/todoList/TodoList';
-import { FilteredTodoList } from './components/footer/FilteredTodoList';
+import { TodoList } from './components/todoList/todoList';
+import { FilteredTodoList } from './components/footer/filteredTodoList';
 
 export const App: React.FC = () => {
   const [todos, setTodos] = useState<TodoInterface[]>([]);
